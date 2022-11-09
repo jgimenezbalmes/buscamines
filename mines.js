@@ -1,4 +1,5 @@
 let mines;
+let minesVoltant = [];
 
 
 
@@ -135,8 +136,9 @@ function inicialitzaJoc() {
     //... en mines guardem la matriu que tindra les dimensions indicades, amb el numero de 1s indicats...
     mines = inicialitzaMines(nMines, cx, cy);
     // i amb la matriu "mines" pintem la taula que hem creat amb createTaula()
-    pintamines(mines);
     clicaCeles();
+    minaVoltant();
+    clicaveins();
 }
 
 function clicaCeles() {
@@ -157,5 +159,63 @@ function clicaCeles() {
     }
     //A la zona del div que hem dit abans, farem que "escolti" quan es faci click, i que corri la funció abans esmentada
     grupTD.addEventListener("click", celesClicades);
+}
+
+function comptaveins(mines, a, b) {
+    let suma = 0;
+    for (let c = -1; c <= 1; c++) {
+        for (let d = -1; d <= 1; d++) {
+            if ((a + c) >= 0 && (b + d) >= 0 && (a + c) < mines.length && (b + d) < mines[0].length) {
+                suma += mines[a + c][b + d];
+            }
+        }
+    }
+    return suma;
+}
+
+function minaVoltant() {
+    for (let a = 0; a < mines.length; a++) {
+        let fila = [];
+        for (let b = 0; b < mines[0].length; b++) {
+            fila.push(0);
+        }
+        minesVoltant.push(fila);
+    }
+    for (let a = 0; a < mines.length; a++) {
+        for (let b = 0; b < mines[0].length; b++) {
+            minesVoltant[a][b] = comptaveins(mines, a, b);
+        }
+    }
+}
+
+function clicaveins() {
+    const grupTD = document.getElementById("ontaula");
+    let taula = document.getElementsByTagName("tbody")[0];
+    const bomba = e => {
+        let coorde = e.target.id.split(',');
+        let x = parseInt(coorde[0]);
+        let y = parseInt(coorde[1]);
+        for (let a = x - 1; a <= x + 1; a++) {
+            for (let b = y - 1; b <= y + 1; b++) {
+                try {
+                    if (mines[x][y]!=1) {
+                        taula.children[a].children[b].innerHTML = minesVoltant[a][b];
+                    }
+                    else {
+                        console.log('Has clicat una mina, has perdut capsigrany!');
+                       
+                        taula.children[x].children[y].innerHTML = "💣";
+                        taula.children[x].children[y].style.backgroundColor="red";
+                        grupTD.removeEventListener("click", bomba);
+                        break;   
+                    }
+                }
+                catch{
+
+                }
+            }
+        }
+    }
+    grupTD.addEventListener("click", bomba);
 }
 
