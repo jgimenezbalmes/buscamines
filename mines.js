@@ -1,5 +1,6 @@
 let mines;
 let minesVoltant = [];
+let perdut = false;
 
 
 
@@ -188,6 +189,8 @@ function minaVoltant() {
     }
 }
 
+
+
 function clicaveins() {
     const grupTD = document.getElementById("ontaula");
     let taula = document.getElementsByTagName("tbody")[0];
@@ -195,8 +198,9 @@ function clicaveins() {
         let coorde = e.target.id.split(',');
         let x = parseInt(coorde[0]);
         let y = parseInt(coorde[1]);
-        for (let a = x - 1; a <= x + 1; a++) {
-            for (let b = y - 1; b <= y + 1; b++) {
+        let sortir = false;
+        for (let a = x - 1; a <= x + 1 && !sortir; a++) {
+            for (let b = y - 1; b <= y + 1 && !sortir; b++) {
                 try {
                     if (mines[x][y]!=1) {
                         taula.children[a].children[b].innerHTML = minesVoltant[a][b];
@@ -206,16 +210,33 @@ function clicaveins() {
                        
                         taula.children[x].children[y].innerHTML = "💣";
                         taula.children[x].children[y].style.backgroundColor="red";
-                        grupTD.removeEventListener("click", bomba);
-                        break;   
+                        //grupTD.removeEventListener("click", bomba);
+                        des();
+                        sortir = true;
+
+                           
                     }
                 }
                 catch{
-
                 }
             }
         }
     }
     grupTD.addEventListener("click", bomba);
+
+    
 }
 
+function des(){
+        let taulasav = taula;
+        createTaula();
+        taula = taulasav;
+        document.getElementById("perds").style.display = "inline";   
+}
+
+function bandera(){
+    window.oncontextmenu = (e) => {
+        e.preventDefault()
+        
+      }
+}
