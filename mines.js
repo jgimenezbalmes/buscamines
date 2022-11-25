@@ -1,6 +1,10 @@
 let mines;
 let minesVoltant = [];
 let perdut = false;
+let taulaBody;
+let counterMines = document.getElementById("nMines").valueAsNumber;
+
+
 
 
 
@@ -19,12 +23,12 @@ function createTaula() {
     //Detectem on esta el div del html    
     let tauladiv = document.getElementById("ontaula");
     //La variable taula sera una taula nova
-    let taula = document.createElement('table');
+    taula = document.createElement('table');
     //Determinem els borders d'aquesta
     taula.border = '1';
 
     //Fem el cos de la taula...
-    let taulaBody = document.createElement('TBODY');
+    taulaBody = document.createElement('TBODY');
     taulaBody.id = "taulabody";
     taula.appendChild(taulaBody);
 
@@ -128,6 +132,7 @@ function pintamines(mines) {
 
 
 function inicialitzaJoc() {
+    perdut = false;
     //Fem servir createTaula per a crear una taula amb les coordenades indicades
     createTaula();
     //Guardem els valors de mines, eixos x i y indicats en variables...
@@ -140,6 +145,9 @@ function inicialitzaJoc() {
     clicaCeles();
     minaVoltant();
     clicaveins();
+    bandera();
+    document.getElementById("perds").style.display = "none";
+    document.getElementById("guanyes").style.display = "none";
 }
 
 function clicaCeles() {
@@ -147,8 +155,12 @@ function clicaCeles() {
     const grupTD = document.getElementById("ontaula");
     //Funció que saltara quan es cliqui una cel·la
     const celesClicades = e => {
+
+        let coorde = e.target.id.split(',');
+        let x = parseInt(coorde[0]);
+        let y = parseInt(coorde[1]);
         //Si la cel·la clicada es vermella...
-        if (e.target.style.backgroundColor == "red") {
+        if (mines[x][y] == 1) {
             //Retornara l'id de la cel·la (és a dir, les coordenades) i dira que és una mina
             console.log(`Les coordenades d'aquesta cel·la són ${e.target.id} i és una mina`);
         }
@@ -162,6 +174,7 @@ function clicaCeles() {
     grupTD.addEventListener("click", celesClicades);
 }
 
+//Funcio que li passes la matriu que conte les mines, i la posicio clicada, i et torna el numero de mines que hi ha en una area 3x3
 function comptaveins(mines, a, b) {
     let suma = 0;
     for (let c = -1; c <= 1; c++) {
@@ -174,6 +187,7 @@ function comptaveins(mines, a, b) {
     return suma;
 }
 
+//Funcio que guarda en una matriu les mines que hi ha al voltant d'una posicio determinada
 function minaVoltant() {
     for (let a = 0; a < mines.length; a++) {
         let fila = [];
@@ -190,53 +204,94 @@ function minaVoltant() {
 }
 
 
-
+//Funcio que aplica a la taula del buscamines els 9 valors al voltant de la posicio que s'ha clicat 
+//que provenen de la matriu de minesVoltant
 function clicaveins() {
     const grupTD = document.getElementById("ontaula");
-    let taula = document.getElementsByTagName("tbody")[0];
+
     const bomba = e => {
+        //Si es perd, se surt de la funcio i es para el joc
+        if (perdut) return;
+        let taula = document.getElementsByTagName("tbody")[0];
+        //Quan es fa clic, s'agafa l'id de la casella (que son les coordenades), i ho partim per la coma
         let coorde = e.target.id.split(',');
+        //Es guarda cada part en una variable, donant les dues variables
         let x = parseInt(coorde[0]);
         let y = parseInt(coorde[1]);
         let sortir = false;
         for (let a = x - 1; a <= x + 1 && !sortir; a++) {
             for (let b = y - 1; b <= y + 1 && !sortir; b++) {
                 try {
-                    if (mines[x][y]!=1) {
-                        taula.children[a].children[b].innerHTML = minesVoltant[a][b];
+                    //Si en la posicio que cliquem, no hi ha una mina...
+                    if (mines[x][y] != 1) {
+                        if (mines[a][b] != 1) {
+                            taula.children[a].children[b].innerHTML = minesVoltant[a][b];
+                        }
                     }
+                    //Si hi ha una mina, es posarà una bomba a la casella clicada, es mostrara el missatge dient que has perdut, i es parara el joc
                     else {
                         console.log('Has clicat una mina, has perdut capsigrany!');
-                       
+                        //Aqui s'agafara el missatge de joc perdut (que esta ocult) i es mostrara
+                        document.getElementById("perds").style.display = "inline";
                         taula.children[x].children[y].innerHTML = "💣";
-                        taula.children[x].children[y].style.backgroundColor="red";
+                        taula.children[x].children[y].style.backgroundColor = "red";
                         //grupTD.removeEventListener("click", bomba);
-                        des();
+                        perdut = true
                         sortir = true;
 
-                           
+
                     }
                 }
-                catch{
+                catch {
                 }
             }
         }
     }
     grupTD.addEventListener("click", bomba);
 
+
+}
+
+//Funcio per a posar banderes fent clic dret. Si es fiquen totes als llocs adients, es guanyara
+//Si es gasten en llocs incorrectes, es perdrà la partida
+function bandera() {
+    let matriubanderes=[];
+    let cy = document.getElementById("cy").value;
+    let cx = document.getElementById("cx").value;
+    //Comptador de les banderes que tenim, que sempre han de ser iguals al numero de mines
+    let counterFlag = counterMines;
+    const grupTD = document.getElementById("ontaula");
+    for (let a = 0; a < cy; a++) {
+        let filerabandera=[];
+        for (let b = 0; b < cx; b++) {
+            filerabandera.push(0);
+        }
+        matriubanderes.push(filerabandera);
+        }
     
-}
-
-function des(){
-        let taulasav = taula;
-        createTaula();
-        taula = taulasav;
-        document.getElementById("perds").style.display = "inline";   
-}
-
-function bandera(){
-    window.oncontextmenu = (e) => {
-        e.preventDefault()
-        
-      }
+    grupTD.oncontextmenu = (e) => {
+        //Preventdefault permet fer boto dret sense que surti el tipic menu desplegable
+        e.preventDefault();
+        let taula = document.getElementsByTagName("tbody")[0];
+        let coorde = e.target.id.split(',');
+        let x = parseInt(coorde[0]);
+        let y = parseInt(coorde[1]);
+        if (counterFlag > 0) {
+            taula.children[x].children[y].innerHTML = "🚩";
+            taula.children[x].children[y].style.backgroundColor = "green";
+            counterFlag--;
+            matriubanderes[x][y]=1;
+        }
+        //Si ens quedem sense banderes, i la matriu de banderes coincideix amb la de mines, es
+        //mostra missatge de que hem guanyat
+        if (counterFlag == 0 && matriubanderes.toString() == mines.toString()) {
+            document.getElementById("guanyes").style.display = "inline";
+        }
+        //I si no es el cas, es mostra el de que s'ha perdut, i es para el joc
+        else if (counterFlag == 0 && matriubanderes.toString()!=mines.toString()) {
+            document.getElementById("perds").style.display = "inline";
+            perdut = true;
+        }
+        if (perdut) return;
+    }
 }
