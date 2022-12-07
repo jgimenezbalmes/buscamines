@@ -1,22 +1,28 @@
+//Variables globals
 let mines;
 let minesVoltant = [];
 let perdut = false;
 let taulaBody;
 let counterMines = document.getElementById("nMines").valueAsNumber;
+let countertaula = 0;
+let taulapunts = document.getElementById("taulapunts");
+let nom;
+let intervaltemps;
+let minutes;
+let seconds;
+
+//Per a guardar la taula de puntuacio de forma local
+function guardalocal() {
+    document.getElementById("taulapunts").innerHTML = localStorage.getItem("taula")
+}
 
 
 
-
-
-function createTaula() {
+function createTaula(x, y) {
     //Agafem els valors dels inputs de la pagina
-    let y = document.getElementById("cy").value;
-    let x = document.getElementById("cx").value;
-
-
 
     //Si es detecta un element taula existent (longitud més gran que 0)...
-    if (document.getElementsByTagName("table").length != 0) {
+    if (document.getElementsByTagName("table").length != 1) {
         //Es borra aquest element
         document.getElementsByTagName("table")[0].remove();
     }
@@ -34,6 +40,7 @@ function createTaula() {
 
 
     //Fem files fins arribar al valor del input de coordenada y...
+
     for (let a = 0; a < y; a++) {
         let tr = document.createElement("tr");
         taulaBody.appendChild(tr);
@@ -46,10 +53,9 @@ function createTaula() {
             //Afegim un id a cadascuna de les cel·les
             td.id = a + "," + b;
             tr.appendChild(td);
-
         }
+
     }
-    //Afegim la taula al div
     tauladiv.appendChild(taula);
 }
 
@@ -82,7 +88,6 @@ function matriuBinaria(matrix) {
 }
 
 function inicialitzaMines(nMines, cx, cy) {
-
     //Creem una matriu buida
     let matriu = [];
     //Guardem el valor de mines desitjat en una variable per a poder modificar-la
@@ -110,6 +115,7 @@ function inicialitzaMines(nMines, cx, cy) {
             minites--;
         }
     }
+
     //Retorna la matriu creada omplerta de 0s i 1s
     return matriu;
 }
@@ -141,13 +147,51 @@ function inicialitzaJoc() {
     let cy = document.getElementById("cy").valueAsNumber;
     //... en mines guardem la matriu que tindra les dimensions indicades, amb el numero de 1s indicats...
     mines = inicialitzaMines(nMines, cx, cy);
+    let y = document.getElementById("cy").value;
+    let x = document.getElementById("cx").value;
+    //Exercici d'opcions desplegables
+    if (document.getElementById("opcions").value == "1") {
+        mines = inicialitzaMines(10, 9, 9);
+        y = 9;
+        x = 9;
+    }
+    if (document.getElementById("opcions").value == "2") {
+        mines = inicialitzaMines(35, 9, 9);
+        y = 9;
+        x = 9;
+    }
+    if (document.getElementById("opcions").value == "3") {
+        mines = inicialitzaMines(99, 16, 16);
+        y = 16;
+        x = 16;
+    }
+    if (document.getElementById("opcions").value == "4") {
+        mines = inicialitzaMines(99, 30, 16);
+        y = 16;
+        x = 30;
+    }
+    if (document.getElementById("opcions").value == "5") {
+        mines = inicialitzaMines(170, 30, 16);
+        y = 16;
+        x = 30;
+    }
+    //Fem servir createTaula per a crear una taula amb les coordenades indicades
+    createTaula(x, y);
     // i amb la matriu "mines" pintem la taula que hem creat amb createTaula()
     clicaCeles();
     minaVoltant();
     clicaveins();
     bandera();
+    guardalocal();
+    //Reseteja displays de comptadors de temps, i missatges de perdre/guanyar
     document.getElementById("perds").style.display = "none";
     document.getElementById("guanyes").style.display = "none";
+    document.getElementById("comptatemps").style.display = "inline";
+    document.getElementById("tempsfinal").style.display = "none";
+    //Resetegem el temps i el tornem a començar
+    clearInterval(intervaltemps);
+    comptatemps();
+
 }
 
 function clicaCeles() {
@@ -235,16 +279,21 @@ function clicaveins() {
                         document.getElementById("perds").style.display = "inline";
                         taula.children[x].children[y].innerHTML = "💣";
                         taula.children[x].children[y].style.backgroundColor = "red";
-                        //grupTD.removeEventListener("click", bomba);
-                        perdut = true
+
+                        perdut = true;
+                        let tempsperdut = document.getElementById("comptatemps").innerHTML;
+                        document.getElementById("comptatemps").style.display = "none";
+                        document.getElementById("tempsfinal").innerHTML = tempsperdut;
+                        document.getElementById("tempsfinal").style.display = "inline";
                         sortir = true;
-
-
                     }
+
                 }
+
                 catch {
                 }
             }
+
         }
     }
     grupTD.addEventListener("click", bomba);
@@ -255,20 +304,20 @@ function clicaveins() {
 //Funcio per a posar banderes fent clic dret. Si es fiquen totes als llocs adients, es guanyara
 //Si es gasten en llocs incorrectes, es perdrà la partida
 function bandera() {
-    let matriubanderes=[];
+    let matriubanderes = [];
     let cy = document.getElementById("cy").value;
     let cx = document.getElementById("cx").value;
     //Comptador de les banderes que tenim, que sempre han de ser iguals al numero de mines
     let counterFlag = counterMines;
     const grupTD = document.getElementById("ontaula");
     for (let a = 0; a < cy; a++) {
-        let filerabandera=[];
+        let filerabandera = [];
         for (let b = 0; b < cx; b++) {
             filerabandera.push(0);
         }
         matriubanderes.push(filerabandera);
-        }
-    
+    }
+
     grupTD.oncontextmenu = (e) => {
         //Preventdefault permet fer boto dret sense que surti el tipic menu desplegable
         e.preventDefault();
@@ -280,18 +329,64 @@ function bandera() {
             taula.children[x].children[y].innerHTML = "🚩";
             taula.children[x].children[y].style.backgroundColor = "green";
             counterFlag--;
-            matriubanderes[x][y]=1;
+            matriubanderes[x][y] = 1;
         }
         //Si ens quedem sense banderes, i la matriu de banderes coincideix amb la de mines, es
         //mostra missatge de que hem guanyat
         if (counterFlag == 0 && matriubanderes.toString() == mines.toString()) {
             document.getElementById("guanyes").style.display = "inline";
+            let tempsperdut = document.getElementById("comptatemps").innerHTML;
+            document.getElementById("comptatemps").style.display = "none";
+            document.getElementById("tempsfinal").innerHTML = tempsperdut;
+            document.getElementById("tempsfinal").style.display = "inline";
+            nom = prompt("Huh, gens malament. Com et dius?");
+            if (nom != null) {
+                let row = taulapunts.insertRow(countertaula);
+                countertaula++;
+                let cela1 = row.insertCell(0);
+                let cela2 = row.insertCell(1);
+                cela1.innerHTML = nom;
+                cela2.innerHTML = minutes * 60 + seconds;
+                localStorage.setItem("taula", taulapunts.innerHTML);
+            }
         }
         //I si no es el cas, es mostra el de que s'ha perdut, i es para el joc
-        else if (counterFlag == 0 && matriubanderes.toString()!=mines.toString()) {
+        else if (counterFlag == 0 && matriubanderes.toString() != mines.toString()) {
             document.getElementById("perds").style.display = "inline";
-            perdut = true;
+            document.getElementById("tempsfinal").innerHTML = tempsperdut;
+            document.getElementById("tempsfinal").style.display = "inline";
+            if (perdut) return;
         }
-        if (perdut) return;
     }
 }
+
+function comptatemps() {
+    //Calculem la data de quan hem fet clic al boto de jugar
+    let countDownDate = new Date();
+    if (countDownDate) {
+        countDownDate = new Date(countDownDate);
+
+    } else {
+        countDownDate = new Date();
+        localStorage.setItem('startDate', countDownDate);
+    }
+
+    // Actualitza el comptador de temps cada segon
+    intervaltemps = setInterval(function () {
+
+        // Agafa la data actual
+        let now = new Date().getTime();
+
+        // Agafem la diferencia entre el temps actual i el temps de quan hem fet clic al boto
+        let distance = now - countDownDate.getTime();
+
+        // Passem el temps de milisegons a minuts i segons
+        minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Fiquem els minuts i segons dins el html
+        document.getElementById("comptatemps").innerHTML = minutes + "m " + seconds + "s ";
+    }, 1000);
+
+}
+

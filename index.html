@@ -1,23 +1,52 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Buscamines</title>
-        <meta charset="UTF-8">
-    </head>
-    <body>
-        <!-- Labels per a introduir les dues coordenades -->
-        <label for="x">Coordenada x:</label>
-        <input type="number" id="cx" name="x"><br><br>
-        <label for="y">Coordenada y:</label>
-        <input type="number" id="cy" name="y"><br><br>
-        <label for="nMines">Numero mines:</label>
-        <input type="number" id="nMines" name="nMines"><br><br>
-        <!-- Div on anira la taula -->
-        <div id="ontaula"></div>
-        <!-- Boto per iniciar la funcio de crear la taula -->
-        <button type="button" onclick="inicialitzaJoc()">Inicia joc!</button><br><br>
-        <div id="perds" style="display:none">Has perdut cap de suro!</div>
-        <div id="guanyes" style="display:none">Felicitats, has guanyat al buscamines!</div>
-    </body>
-    <script src="mines.js"></script>
+
+<head>
+    <title>Buscamines</title>
+    <meta charset="UTF-8">
+</head>
+<style>
+    table, th, td {
+  border:1px solid black;
+}
+td{
+    
+    height: 30px;
+}
+</style>
+<body>
+    <!-- Labels per a introduir les dues coordenades -->
+    <label for="x">Coordenada x:</label>
+    <input type="number" id="cx" name="x"><br><br>
+    <label for="y">Coordenada y:</label>
+    <input type="number" id="cy" name="y"><br><br>
+    <label for="nMines">Numero mines:</label>
+    <input type="number" id="nMines" name="nMines"><br><br>
+    <!-- Desplegable per a seleccionar opcions -->
+    <label for="desplegable">Escull un preset</label>
+    <select name="opcions" id="opcions">
+        <option value="0">Cap</option>
+        <option value="1">9x9, 10 mines</option>
+        <option value="2">9x9, 35 mines</option>
+        <option value="3">16x16, 99 mines</option>
+        <option value="4">30x16, 99 mines</option>
+        <option value="5">30x16, 170 mines</option>
+    </select>
+    <!-- Div on anira la taula -->
+    <div id="ontaula"></div>
+    <!-- Boto per iniciar la funcio de crear la taula -->
+    <button type="button" onclick="inicialitzaJoc()">Inicia joc!</button><br><br>
+    <div id="perds" style="display:none">Has perdut cap de suro!</div>
+    <div id="guanyes" style="display:none">Felicitats, has guanyat al buscamines!</div>
+    <p id="comptatemps"></p><br>
+    <p id="tempsfinal" style="display:none"></p>
+    <table id="taulapunts" style="width:50%">
+        <tr>
+            <th>Nom</th>
+            <th>Puntuació</th>
+        </tr>
+    </table>
+</body>
+<script src="mines.js"></script>
+
 </html>
